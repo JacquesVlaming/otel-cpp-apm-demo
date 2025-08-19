@@ -1,0 +1,8 @@
+[root@RedHat9 mnt]# sudo dnf install epel-release
+Last metadata expiration check: 4:59:38 ago on Tue 19 Aug 2025 13:58:00 UTC.
+No match for argument: epel-release
+Error: Unable to find a match: epel-release
+[root@RedHat9 mnt]# subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+This system has no repositories available through subscriptions.
+
+
