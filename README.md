@@ -10,6 +10,13 @@ Before running the demo, you need a configuration file named `otel-collector-con
 
 1. Clone the demo repository (if not already cloned):
 
+Make sure you have at least git installed:
+```bash
+sudo dnf update -y
+sudo dnf install -y git
+```
+
+Clone the repo:
 ```bash
 git clone https://github.com/JacquesVlaming/otel-cpp-apm-demo.git
 ```
@@ -26,7 +33,7 @@ cp otel-cpp-apm-demo/otel-collector-config-example.yaml otel-collector-config.ya
 nano otel-collector-config.yaml
 ```
 
-This file configures the OpenTelemetry Collector to receive and export traces.
+This file configures the OpenTelemetry Collector to receive and export traces. Only update the `exporters.otlp/elastic.endpoint` and `exporters.otlp/elastic.headers`.
 
 ---
 
@@ -45,6 +52,27 @@ sudo dnf install -y git cmake nano protobuf-devel grpc-devel abseil-cpp-devel
 sudo dnf groupinstall -y "Development Tools"
 ```
 
+You might get errors, such as:
+```bash
+No match for argument: protobuf-devel
+No match for argument: grpc-devel
+No match for argument: abseil-cpp-devel
+```
+
+You can fix this, by first running this:
+```bash
+# 1. Install EPEL repository
+sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+# 2. Enable CodeReady Builder repository
+sudo dnf config-manager --set-enabled rhui-codeready-builder-for-rhel-9-x86_64-rhui-rpms
+
+# 3. Update package metadata
+sudo dnf update
+
+# 4. Install required development packages
+sudo dnf install -y git cmake nano protobuf-devel grpc-devel abseil-cpp-devel
+```
 These tools are required to build the OpenTelemetry C++ SDK and demo application.
 
 ---
