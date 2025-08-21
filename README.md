@@ -179,12 +179,20 @@ g++ -std=c++17 -pthread -o ads_server ads_server.cpp
 LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
 ```
 
+You will see it listening on port `5000`:
+
+```bash
+ADS Hello World Server listening on port 5000...
+[OTEL PRELOAD] Tracing initialized (lazy)
+```
+
 ## 9. Initiate Client Calls from a Separate Terminal
 
 Run the client to generate requests to `ads_server`:
 
 ```bash
-g++ -std=c++17 -pthread -o ads_server ads_client.cpp
+cd $HOME/otel-cpp-apm-demo
+g++ -std=c++17 -pthread -o ads_client ads_client.cpp
 ./ads_client
 ```
 
