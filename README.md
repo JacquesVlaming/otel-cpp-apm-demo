@@ -142,10 +142,18 @@ export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib:$LD_LIBRARY_PATH
 
 ## 8. Run the Demo Application with Preload Tracing
 
-Finally, start the demo application:
+Start the demo application:
 
 ```bash
 LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
+```
+
+## 9. Initiate Client Calls from a Separate Terminal
+
+Run the client to generate requests to `ads_server`:
+
+```bash
+./ads_client
 ```
 
 This ensures that the OpenTelemetry library intercepts calls in `ads_server` and sends traces to the collector.
@@ -161,6 +169,7 @@ This ensures that the OpenTelemetry library intercepts calls in `ads_server` and
 5. Build and install OpenTelemetry C++ SDK.  
 6. Build the preload library.  
 7. Set environment variables for tracing.  
-8. Run the demo application with `LD_PRELOAD`.
+8. Run the demo application with `LD_PRELOAD`.  
+9. Initiate client calls using `ads_client`.
 
 After completing these steps, traces from the demo application will be collected and exported according to your OpenTelemetry Collector configuration.
