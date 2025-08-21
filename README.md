@@ -135,7 +135,7 @@ Configure tracing:
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_INSECURE=true
 export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
-export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib64:$LD_LIBRARY_PATH
 ```
 
 ---

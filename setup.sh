@@ -55,7 +55,7 @@ g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
   -lopentelemetry_exporter_otlp_grpc \
   -lopentelemetry_trace \
   -lgrpc++ -lgrpc -ldl -lpthread \
-  -Wl,-rpath,$HOME/otel-cpp/install/lib:$HOME/otel-cpp/install/lib64
+  -Wl,-rpath,$HOME/otel-cpp/install/lib64:$HOME/otel-cpp/install/lib64
 
 # -------------------------------
 # 7. Set environment variables
