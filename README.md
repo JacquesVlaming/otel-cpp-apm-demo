@@ -145,6 +145,7 @@ export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib:$LD_LIBRARY_PATH
 Start the demo application:
 
 ```bash
+g++ -std=c++17 -pthread -o ads_server ads_server.cpp
 LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
 ```
 
@@ -153,6 +154,7 @@ LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
 Run the client to generate requests to `ads_server`:
 
 ```bash
+g++ -std=c++17 -pthread -o ads_server ads_client.cpp
 ./ads_client
 ```
 
