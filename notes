@@ -1,0 +1,38 @@
+gcloud compute ssh redhat9 --zone us-central1-b
+
+sudo dnf update
+
+sudo dnf install git -y
+
+sudo dnf install cmake -y
+
+sudo dnf groupinstall "Development Tools" -y
+
+sudo dnf install protobuf-devel grpc-devel abseil-cpp-devel -y
+
+git clone https://github.com/JacquesVlaming/otel-cpp-apm-demo.git
+
+git clone https://github.com/open-telemetry/opentelemetry-cpp.git
+
+cd opentelemetry-cpp
+
+mkdir build && cd build
+
+cmake .. \
+-DBUILD_SHARED_LIBS=ON \
+-DWITH_OTLP_GRPC=ON \
+-DCMAKE_INSTALL_PREFIX=$HOME/otel-cpp/install \
+-DWITH_EXAMPLES=OFF \
+-DBUILD_TESTING=OFF
+
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+cd /otel-cpp-apm-demo
+g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
+-I$HOME/otel-cpp/install/include \
+-L$HOME/otel-cpp/install/lib64 \
+-lopentelemetry_exporter_otlp_grpc \
+-lopentelemetry_trace \
+-ldl -lpthread
