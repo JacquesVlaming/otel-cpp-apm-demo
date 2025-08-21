@@ -67,6 +67,12 @@ sudo apt install -y zlib1g-dev cmake g++ make protobuf-compiler libprotobuf-dev 
 
 Specifically, when we build OpenTelemetry C++ with OTLP/gRPC support, the app serializes trace data using protobuf and transmits it using gRPC to the collector, enabling distributed tracing and observability.
 
+TIP: Make use of `nohup` to run the `cmake` and `make` commands, and then look at the progress with `tail -f nohup.out`. For example:
+```sh
+nohup cmake .. -DCMAKE_BUILD_TYPE=Release &
+tail -f nohup.out
+```
+
 ```sh
 # Build Protobuf
 git clone https://github.com/protocolbuffers/protobuf.git
