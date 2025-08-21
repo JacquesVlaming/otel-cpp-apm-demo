@@ -1,106 +1,76 @@
-# This does not work yet!!
+# OpenTelemetry C++ APM Demo Setup on Red Hat 9
 
-# Feel free to PR this... :)
+This guide sets up a development environment for the OpenTelemetry C++ APM demo on Red Hat 9. It includes system updates, tools, Docker setup, building the OpenTelemetry C++ SDK, and running the demo application with tracing.
 
-# OTEL C++ APM Demo
+```bash
+#!/bin/bash
+set -e
 
-This guide will show you how to set up the OpenTelemetry C++ demo on Red Hat 9 using Docker.
+# -------------------------------
+# 1. Update system and install tools
+# -------------------------------
+sudo dnf update -y
+sudo dnf install -y git cmake nano protobuf-devel grpc-devel abseil-cpp-devel
+sudo dnf groupinstall -y "Development Tools"
 
----
+# -------------------------------
+# 2. Install Docker
+# -------------------------------
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
 
-## Prerequisites
+# -------------------------------
+# 3. Run OpenTelemetry Collector in Docker (detached)
+# -------------------------------
+docker run -d --name otelcol \
+  -v "$(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml" \
+  -p 4317:4317 -p 4318:4318 \
+  otel/opentelemetry-collector:latest \
+  --config /etc/otelcol/config.yaml
 
-- Red Hat 9 with sudo privileges
-- Internet access
-- Sufficient disk space
-
----
-
-## Step 1: Install Docker
-
-sudo apt-get update
-sudo apt-get install -y ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
----
-
-## Step 2: Clone the Required Repositories
-
+# -------------------------------
+# 4. Clone repositories
+# -------------------------------
 git clone https://github.com/JacquesVlaming/otel-cpp-apm-demo.git
 git clone https://github.com/open-telemetry/opentelemetry-cpp.git
 
----
-
-## Step 3: Build the OpenTelemetry C++ SDK
-
-cd opentelemetry-cpp
-mkdir build && cd build
-
-sudo apt update
-sudo apt install -y zlib1g-dev cmake g++ make
-
+# -------------------------------
+# 5. Build and install OpenTelemetry C++ SDK
+# -------------------------------
+mkdir -p opentelemetry-cpp/build && cd opentelemetry-cpp/build
 cmake .. \
--DBUILD_SHARED_LIBS=ON \
--DWITH_OTLP_GRPC=ON \
--DCMAKE_INSTALL_PREFIX=$HOME/otel-cpp/install \
--DWITH_EXAMPLES=OFF \
--DBUILD_TESTING=OFF
-
+  -DBUILD_SHARED_LIBS=ON \
+  -DWITH_OTLP_GRPC=ON \
+  -DCMAKE_INSTALL_PREFIX=$HOME/otel-cpp/install \
+  -DWITH_EXAMPLES=OFF \
+  -DBUILD_TESTING=OFF
 make -j$(nproc)
 sudo make install
 sudo ldconfig
 
----
-
-## Step 4: Build the Demo Applications
-
-cd ~/otel-cpp-apm-demo
-
-# Preload library
+# -------------------------------
+# 6. Build the preload library
+# -------------------------------
+cd $HOME/otel-cpp-apm-demo
 g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
--I$HOME/otel-cpp/install/include \
--L$HOME/otel-cpp/install/lib \
--lopentelemetry_exporter_otlp_grpc \
--lopentelemetry_sdk_trace \
--lopentelemetry_api \
--ldl -lpthread
+  -I$HOME/otel-cpp/install/include \
+  -L$HOME/otel-cpp/install/lib64 \
+  -lopentelemetry_exporter_otlp_grpc \
+  -lopentelemetry_trace \
+  -lgrpc++ -lgrpc -ldl -lpthread \
+  -Wl,-rpath,$HOME/otel-cpp/install/lib:$HOME/otel-cpp/install/lib64
 
-# Client and server
-g++ -std=c++17 -Wall -o ads_client ads_client.cpp
-g++ -std=c++17 -Wall -pthread -o ads_server ads_server.cpp
-
----
-
-## Step 5: Run the OpenTelemetry Collector
-
-docker run --rm -it \
--v $(pwd)/otel-collector-config.yaml:/etc/otel-collector-config.yaml \
--p 4317:4317 -p 4318:4318 \
-otel/opentelemetry-collector:latest \
---config=/etc/otel-collector-config.yaml
-
----
-
-## Step 6: Run the Demo Server
-
+# -------------------------------
+# 7. Set environment variables
+# -------------------------------
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+export OTEL_EXPORTER_OTLP_INSECURE=true
+export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
 export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib:$LD_LIBRARY_PATH
+
+# -------------------------------
+# 8. Run the demo application with preload tracing
+# -------------------------------
 LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
-
-# Run the client to generate traces
-./ads_client
-
----
-
-## Notes
-
-- Make sure `LD_LIBRARY_PATH` and `LD_PRELOAD` point to your compiled OpenTelemetry library.
-- This setup allows you to observe traces sent from the demo application to the OpenTelemetry Collector running in Docker.
