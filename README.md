@@ -89,9 +89,10 @@ sudo ldconfig
 # Requires gRPC
 git clone --recurse-submodules -b v1.62.0 https://github.com/grpc/grpc
 cd grpc
+# To clean previous build, if needed, run `rm -rf cmake/build`
 mkdir -p cmake/build
 cd cmake/build
-cmake ../..
+cmake ../.. -DCMAKE_CXX_STANDARD=17
 make -j$(nproc)
 sudo make install
 sudo ldconfig
