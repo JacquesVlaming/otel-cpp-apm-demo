@@ -33,7 +33,11 @@ cp otel-cpp-apm-demo/otel-collector-config-example.yaml otel-collector-config.ya
 nano otel-collector-config.yaml
 ```
 
-This file configures the OpenTelemetry Collector to receive and export traces. Only update the `exporters.otlp/elastic.endpoint` and `exporters.otlp/elastic.headers`.
+This file configures the OpenTelemetry Collector to receive and export traces. Only update the `exporters.otlp/elastic.endpoint` and `exporters.otlp/elastic.headers`. 
+
+Notes:
+- The `endpoint` should be the APM server URL, with the port, for example: `"https://<your-cluster-name>.apm.<region>.<provider>.elastic-cloud.com:443"`
+- The `headers` should be in the format `Authorization: "ApiKey <your_api_key>"`
 
 ---
 
@@ -194,6 +198,11 @@ Run the client to generate requests to `ads_server`:
 cd $HOME/otel-cpp-apm-demo
 g++ -std=c++17 -pthread -o ads_client ads_client.cpp
 ./ads_client
+```
+
+If everything is set up correctly, you will see:
+```bash
+Server responded: Hello from ADS! You sent: Hello ADS Server!
 ```
 
 This ensures that the OpenTelemetry library intercepts calls in `ads_server` and sends traces to the collector.
