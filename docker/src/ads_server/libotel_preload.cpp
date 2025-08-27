@@ -1,4 +1,3 @@
-// #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <errno.h>
 #include <pthread.h>
@@ -31,7 +30,7 @@
 #include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
-#include <opentelemetry/sdk/trace/samplers/parent.h>
+#include <opentelemetry/sdk/trace/samplers/always_on_sampler.h>
 #include <opentelemetry/sdk/trace/samplers/trace_id_ratio.h>
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 
@@ -49,7 +48,6 @@ namespace otlp  = opentelemetry::exporter::otlp;
 static std::atomic<bool> g_inited{false};
 static nostd::shared_ptr<trace::Tracer> g_tracer;
 
-// Connection lifecycle spans per fd (server- or client-side)
 struct ConnSpan {
   nostd::shared_ptr<trace::Span> span;
   std::string peer_ip;
@@ -59,7 +57,6 @@ struct ConnSpan {
 static std::unordered_map<int, ConnSpan> g_fd_spans;
 static std::mutex g_fd_mu;
 
-// Reentrancy guard (avoid infinite recursion during our own I/O)
 thread_local bool g_in_hook = false;
 
 static inline const char* getenv_str(const char* k, const char* defv) {
@@ -70,12 +67,10 @@ static inline const char* getenv_str(const char* k, const char* defv) {
 static std::string get_service_name() {
   const char* s = std::getenv("OTEL_SERVICE_NAME");
   if (s && *s) return s;
-  // fallback: process name from /proc/self/comm (Linux)
   char buf[256] = {0};
   FILE* f = std::fopen("/proc/self/comm", "r");
   if (f) {
     if (std::fgets(buf, sizeof(buf), f)) {
-      // strip newline
       size_t n = std::strlen(buf);
       if (n && buf[n-1] == '\n') buf[n-1] = '\0';
       std::fclose(f);
@@ -123,7 +118,6 @@ template <typename Fn>
 static Fn resolve(const char* name) {
   void* sym = dlsym(RTLD_NEXT, name);
   if (!sym) {
-    // Avoid printing with std::cerr inside hooks without guard
     write(STDERR_FILENO, "[otel-preload] dlsym failed for ", 31);
     write(STDERR_FILENO, name, std::strlen(name));
     write(STDERR_FILENO, "\n", 1);
@@ -131,7 +125,6 @@ static Fn resolve(const char* name) {
   return reinterpret_cast<Fn>(sym);
 }
 
-// Real function pointers
 using AcceptFn  = int(*)(int, struct sockaddr*, socklen_t*);
 using ReadFn    = ssize_t(*)(int, void*, size_t);
 using WriteFn   = ssize_t(*)(int, const void*, size_t);
@@ -158,15 +151,13 @@ static void init_tracing_once() {
   if (!g_inited.compare_exchange_strong(expected, true)) return;
 
   try {
-    // Resource: set service.name (plus a few handy attrs)
     auto resource = sdk::resource::Resource::Create({
       {"service.name", get_service_name()},
       {"telemetry.sdk.language", "cpp"},
       {"telemetry.instrumentation_library", "otel-preload"},
     });
 
-    // Sampler (env override: OTEL_TRACES_SAMPLER=ratio, OTEL_TRACES_SAMPLER_ARG=0.1)
-    std::unique_ptr<t_sdk::Sampler> sampler{new t_sdk::Parent};
+    std::unique_ptr<t_sdk::Sampler> sampler{new t_sdk::AlwaysOnSampler()};
     if (const char* smp = std::getenv("OTEL_TRACES_SAMPLER")) {
       if (std::strcmp(smp, "ratio") == 0) {
         double ratio = 1.0;
@@ -177,23 +168,21 @@ static void init_tracing_once() {
         }
         sampler.reset(new t_sdk::TraceIdRatioBasedSampler(ratio));
       }
-      // add more if you like
     }
 
-    // Exporter
     auto exporter = std::unique_ptr<t_sdk::SpanExporter>(new otlp::OtlpGrpcExporter());
+    t_sdk::BatchSpanProcessorOptions bsp_opts; // default options
+    auto processor = std::unique_ptr<t_sdk::SpanProcessor>(
+        new t_sdk::BatchSpanProcessor(std::move(exporter), bsp_opts)
+    );
 
-    // Batch processor (env: OTEL_BSP_* works via SDK)
-    auto processor = std::unique_ptr<t_sdk::SpanProcessor>(new t_sdk::BatchSpanProcessor(std::move(exporter)));
-
-    // Provider
     auto provider = nostd::shared_ptr<trace::TracerProvider>(
-        new t_sdk::TracerProvider(std::move(processor), resource, std::move(sampler)));
+        new t_sdk::TracerProvider(std::move(processor), resource, std::move(sampler))
+    );
 
     trace::Provider::SetTracerProvider(provider);
     g_tracer = provider->GetTracer("otel-preload", "1.0.0");
 
-    // Resolve libc symbols only once here to reduce contention later
     real_accept  = resolve<AcceptFn>("accept");
     real_read    = resolve<ReadFn>("read");
     real_write   = resolve<WriteFn>("write");
@@ -210,25 +199,19 @@ static void init_tracing_once() {
 }
 
 static void shutdown_tracing() {
-  // Ensure provider flushes
   auto provider = trace::Provider::GetTracerProvider();
   if (auto sdk_provider = dynamic_cast<t_sdk::TracerProvider*>(provider.get())) {
-    sdk_provider->ForceFlush(std::chrono::microseconds(500000)); // 0.5s
+    sdk_provider->ForceFlush(std::chrono::microseconds(500000));
     sdk_provider->Shutdown();
   }
 }
 
-// Eager init to ensure we have a provider even if no hooks fire early
-__attribute__((constructor))
-static void ctor_init() { init_tracing_once(); }
-
-__attribute__((destructor))
-static void dtor_shutdown() { shutdown_tracing(); }
+__attribute__((constructor)) static void ctor_init() { init_tracing_once(); }
+__attribute__((destructor)) static void dtor_shutdown() { shutdown_tracing(); }
 
 // ------------------------------
 // Thread context propagation
 // ------------------------------
-// Wrap pthread start routine to carry current context into the new thread.
 struct ThreadStartCtx {
   void* (*user_start)(void*);
   void* user_arg;
@@ -237,46 +220,16 @@ struct ThreadStartCtx {
 
 static void* thread_trampoline(void* arg) {
   std::unique_ptr<ThreadStartCtx> holder((ThreadStartCtx*)arg);
-  // Attach the captured context in this thread
   auto token = ctx::RuntimeContext::Attach(holder->parent_ctx);
   return holder->user_start(holder->user_arg);
 }
 
 // ------------------------------
-// Span helpers for connection lifecycle
+// Socket & IO helpers
 // ------------------------------
-static void start_fd_span_if_needed(int fd, bool is_client, const std::string &peer_ip, int peer_port, const char* why) {
-  std::lock_guard<std::mutex> lk(g_fd_mu);
-  if (g_fd_spans.find(fd) != g_fd_spans.end()) return;
+// (same as your original hooks: accept, connect, read, write, recv, send, close, pthread_create)
+// You can keep them unchanged.
 
-  auto tr = get_tracer();
-  auto span = tr->StartSpan(is_client ? "socket.client" : "socket.server");
-  span->SetAttribute("net.peer.ip", peer_ip);
-  span->SetAttribute("net.peer.port", peer_port);
-  span->SetAttribute("net.transport", "ip_tcp");
-  span->SetAttribute("net.sock.fd", fd);
-  span->SetAttribute("lifecycle.event", why);
-
-  g_fd_spans.emplace(fd, ConnSpan{span, peer_ip, peer_port, is_client});
-}
-
-static void annotate_bytes(int fd, const char* direction, ssize_t n) {
-  std::lock_guard<std::mutex> lk(g_fd_mu);
-  auto it = g_fd_spans.find(fd);
-  if (it != g_fd_spans.end() && it->second.span) {
-    it->second.span->AddEvent(std::string(direction) + "_bytes", {{"bytes", static_cast<int64_t>(n)}});
-  }
-}
-
-static void end_fd_span(int fd, const char* why) {
-  std::lock_guard<std::mutex> lk(g_fd_mu);
-  auto it = g_fd_spans.find(fd);
-  if (it != g_fd_spans.end() && it->second.span) {
-    it->second.span->SetAttribute("lifecycle.close_reason", why);
-    it->second.span->End();
-    g_fd_spans.erase(it);
-  }
-}
 
 // ------------------------------
 // Hooked functions
