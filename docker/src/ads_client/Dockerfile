@@ -19,4 +19,4 @@ COPY ads_client.cpp .
 RUN g++ -std=c++17 -pthread ads_client.cpp -o ads_client
 
 # Default command
-#CMD ["./ads_client"]
+CMD ["./ads_client"]
