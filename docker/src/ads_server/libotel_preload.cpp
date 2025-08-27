@@ -23,7 +23,7 @@
 #include <sstream>
 #include <memory>
 
-#include <opentelemetry/trace/provider.h>
+#include <opentelemetry/trace/tracer_provider.h>
 #include <opentelemetry/trace/scope.h>
 #include <opentelemetry/context/runtime_context.h>
 #include <opentelemetry/sdk/resource/resource.h>
