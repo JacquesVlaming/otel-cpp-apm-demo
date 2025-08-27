@@ -10,6 +10,13 @@ Before running the demo, you need a configuration file named `otel-collector-con
 
 1. Clone the demo repository (if not already cloned):
 
+Make sure you have at least git installed:
+```bash
+sudo dnf update -y
+sudo dnf install -y git
+```
+
+Clone the repo:
 ```bash
 git clone https://github.com/JacquesVlaming/otel-cpp-apm-demo.git
 ```
@@ -26,7 +33,11 @@ cp otel-cpp-apm-demo/otel-collector-config-example.yaml otel-collector-config.ya
 nano otel-collector-config.yaml
 ```
 
-This file configures the OpenTelemetry Collector to receive and export traces.
+This file configures the OpenTelemetry Collector to receive and export traces. Only update the `exporters.otlp/elastic.endpoint` and `exporters.otlp/elastic.headers`. 
+
+Notes:
+- The `endpoint` should be the APM server URL, with the port, for example: `"https://<your-cluster-name>.apm.<region>.<provider>.elastic-cloud.com:443"`
+- The `headers` should be in the format `Authorization: "ApiKey <your_api_key>"`
 
 ---
 
@@ -45,6 +56,27 @@ sudo dnf install -y git cmake nano protobuf-devel grpc-devel abseil-cpp-devel
 sudo dnf groupinstall -y "Development Tools"
 ```
 
+You might get errors, such as:
+```bash
+No match for argument: protobuf-devel
+No match for argument: grpc-devel
+No match for argument: abseil-cpp-devel
+```
+
+You can fix this, by first running this:
+```bash
+# 1. Install EPEL repository
+sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+# 2. Enable CodeReady Builder repository
+sudo dnf config-manager --set-enabled rhui-codeready-builder-for-rhel-9-x86_64-rhui-rpms
+
+# 3. Update package metadata
+sudo dnf update
+
+# 4. Install required development packages
+sudo dnf install -y git cmake nano protobuf-devel grpc-devel abseil-cpp-devel
+```
 These tools are required to build the OpenTelemetry C++ SDK and demo application.
 
 ---
@@ -58,6 +90,8 @@ sudo dnf -y install dnf-plugins-core
 sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
 sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+newgrp docker
 ```
 
 Docker allows running the collector in a containerized environment.
@@ -149,13 +183,26 @@ g++ -std=c++17 -pthread -o ads_server ads_server.cpp
 LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
 ```
 
+You will see it listening on port `5000`:
+
+```bash
+ADS Hello World Server listening on port 5000...
+[OTEL PRELOAD] Tracing initialized (lazy)
+```
+
 ## 9. Initiate Client Calls from a Separate Terminal
 
 Run the client to generate requests to `ads_server`:
 
 ```bash
-g++ -std=c++17 -pthread -o ads_server ads_client.cpp
+cd $HOME/otel-cpp-apm-demo
+g++ -std=c++17 -pthread -o ads_client ads_client.cpp
 ./ads_client
+```
+
+If everything is set up correctly, you will see:
+```bash
+Server responded: Hello from ADS! You sent: Hello ADS Server!
 ```
 
 This ensures that the OpenTelemetry library intercepts calls in `ads_server` and sends traces to the collector.
