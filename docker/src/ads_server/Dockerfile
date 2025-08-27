@@ -29,14 +29,18 @@ RUN cmake .. \
 # Copy preload source and build shared library
 WORKDIR /app
 COPY libotel_preload.cpp .
-RUN g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
-    -I/otel-cpp/install/include \
-    -L/otel-cpp/install/lib \
-    -lopentelemetry_exporter_otlp_grpc \
-    -lopentelemetry_trace \
-    -lopentelemetry_common \
-    -lgrpc++ -lgrpc -ldl -lpthread \
-    -Wl,-rpath,/otel-cpp/install/lib
+RUN g++ -std=c++17 -fPIC -shared libotel_preload.cpp \
+        -o libotel_preload.so \
+        -I$HOME/otel-cpp/install/include \
+        -L$HOME/otel-cpp/install/lib64 \
+        -lopentelemetry_trace \
+        -lopentelemetry_exporter_otlp_grpc \
+        -lopentelemetry_resources \
+        -lopentelemetry_common \
+        -lopentelemetry_sdk \
+        -lpthread -ldl -lgrpc++ -lprotobuf -lssl -lcrypto -lz
+
+
 
 # Verify that preload library was built
 RUN ls -l libotel_preload.so

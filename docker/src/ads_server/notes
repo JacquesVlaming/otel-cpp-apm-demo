@@ -1,0 +1,10 @@
+g++ -std=c++17 -fPIC -shared libotel_preload.cpp \
+  -o libotel_preload.so \
+  -I$HOME/otel-cpp/install/include \
+  -L$HOME/otel-cpp/install/lib64 \
+  -lotel_trace \
+  -lotel_exporter_otlp_grpc \
+  -lotel_resources \
+  -lotel_common \
+  -lotel_sdk \
+  -lpthread -ldl
