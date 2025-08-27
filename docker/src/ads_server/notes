@@ -8,3 +8,15 @@ g++ -std=c++17 -fPIC -shared libotel_preload.cpp \
   -lotel_common \
   -lotel_sdk \
   -lpthread -ldl
+
+
+cmake .. \
+  -DBUILD_SHARED_LIBS=ON \
+  -DWITH_OTLP_GRPC=ON \
+  -DOPENTELEMETRY_INSTALL=ON \
+  -DWITH_EXAMPLES=OFF \
+  -DBUILD_TESTING=OFF \
+  -DCMAKE_INSTALL_PREFIX=$HOME/otel-cpp/installrm -r -f *
+
+cmake --build . --target all
+cmake --install .

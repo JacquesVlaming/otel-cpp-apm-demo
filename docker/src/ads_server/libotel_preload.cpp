@@ -30,7 +30,7 @@
 #include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
-#include <opentelemetry/sdk/trace/samplers/always_on_sampler.h>
+#include <opentelemetry/sdk/trace/samplers/always_on.h>
 #include <opentelemetry/sdk/trace/samplers/trace_id_ratio.h>
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 
