@@ -1,6 +1,6 @@
 # OpenTelemetry C++ APM Demo Setup on Red Hat
 
-This guide walks you through setting up a development environment for the **OpenTelemetry C++ APM demo** on **Red Hat 9**.  
+This guide walks you through setting up a development environment for the **OpenTelemetry C++ APM demo** on **Red Hat**.  
 It covers:
 
 - Preparing the OpenTelemetry Collector configuration  
