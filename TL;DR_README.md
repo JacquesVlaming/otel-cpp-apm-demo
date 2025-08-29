@@ -87,11 +87,23 @@ This exposes the OTLP gRPC (`4317`) and HTTP (`4318`) ports for sending traces.
 
 Configure the environment for tracing:
 
+
+Create a new file in /etc/profile.d/, e.g.,
+
 ```bash
+sudo nano /etc/profile.d/otel.sh
+```
+
+Add your environment variables:
+```
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_INSECURE=true
 export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
 export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
+```
+Make it executable:
+```
+sudo chmod +x /etc/profile.d/otel.sh
 ```
 
 ---
@@ -120,12 +132,13 @@ Open another terminal and run the client:
 
 ```bash
 cd $HOME/otel-cpp-apm-demo
-export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
+export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_client,env=dev
 ./ads_client
 ```
 
 Expected output:
 ```
+[OTEL PRELOAD] Tracing initialized (lazy)
 Server responded: Hello from ADS! You sent: Hello ADS Server!
 ```
 
