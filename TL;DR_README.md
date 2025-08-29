@@ -63,7 +63,7 @@ Add your environment variables:
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_INSECURE=true
-export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$HOME/otel-cpp-apm-demo/otel-cpp/install/lib:$LD_LIBRARY_PATH
 export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
 ```
 
