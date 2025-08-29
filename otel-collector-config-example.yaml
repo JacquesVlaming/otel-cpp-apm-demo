@@ -10,7 +10,7 @@ exporters:
   otlp/elastic:
     endpoint: "https://this-is-an-example.apm.af-south-1.aws.elastic-cloud.com:443"
     headers:
-      Authorization: "Bearer this-is-an-example"
+      Authorization: "ApiKey this-is-an-example"
 
 service:
   pipelines:
