@@ -1,10 +1,12 @@
+
 # OpenTelemetry C++ APM Demo Setup on Red Hat
 
 This guide walks you through setting up a development environment for the **OpenTelemetry C++ APM demo** on **Red Hat**.  
 It covers:
 
 - Preparing the OpenTelemetry Collector configuration  
-- Setting up Docker  
+- Setting environment variables  
+- Installing and running Docker  
 - Running the OpenTelemetry Collector  
 - Running the demo application with tracing  
 
@@ -50,6 +52,34 @@ Update the following fields:
   Authorization: "ApiKey <your_api_key>"
   ```
 
+### **Step 0.5: Set Environment Variables**
+
+Create a new file in `/etc/profile.d/`, e.g.,
+```bash
+sudo nano /etc/profile.d/otel.sh
+```
+
+Add your environment variables:
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+export OTEL_EXPORTER_OTLP_INSECURE=true
+export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
+export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
+```
+
+Make it executable:
+```bash
+sudo chmod +x /etc/profile.d/otel.sh
+```
+
+> **Tip:** Open a new terminal or `source /etc/profile.d/otel.sh` to load these variables immediately.  
+
+#### **0.5.1 Reboot the System**
+To ensure all environment variables are loaded system-wide:
+```bash
+sudo reboot
+```
+
 ---
 
 ## **1. Install Docker**
@@ -72,46 +102,16 @@ newgrp docker
 Start the collector in **detached mode**:
 
 ```bash
-docker run -d --name otelcol \
-  -v "$(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml" \
-  -p 4317:4317 -p 4318:4318 \
-  otel/opentelemetry-collector:latest \
-  --config /etc/otelcol/config.yaml
+docker run -d --name otelcol   -v "$(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml"   -p 4317:4317 -p 4318:4318   otel/opentelemetry-collector:latest   --config /etc/otelcol/config.yaml
 ```
 
 This exposes the OTLP gRPC (`4317`) and HTTP (`4318`) ports for sending traces.
 
 ---
 
-## **3. Set Environment Variables**
+## **3. Run the Demo Application with Preload Tracing**
 
-Configure the environment for tracing:
-
-
-Create a new file in /etc/profile.d/, e.g.,
-
-```bash
-sudo nano /etc/profile.d/otel.sh
-```
-
-Add your environment variables:
-```
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-export OTEL_EXPORTER_OTLP_INSECURE=true
-export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
-export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
-```
-Make it executable:
-```
-sudo chmod +x /etc/profile.d/otel.sh
-```
-
----
-
-## **4. Run the Demo Application with Preload Tracing**
-
-Start the **ADS server**:
-
+### **3.1 Start the Server**
 ```bash
 cd $HOME/otel-cpp-apm-demo
 export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
@@ -124,12 +124,9 @@ ADS Hello World Server listening on port 5000...
 [OTEL PRELOAD] Tracing initialized (lazy)
 ```
 
----
+### **3.2 Start the Client**
 
-## **5. Initiate Client Calls**
-
-Open another terminal and run the client:
-
+Open another terminal:
 ```bash
 cd $HOME/otel-cpp-apm-demo
 export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_client,env=dev
@@ -149,9 +146,11 @@ This confirms that the OpenTelemetry library intercepted calls in `ads_server` a
 ## ✅ **Summary Checklist**
 
 ✔ Prepare `otel-collector-config.yaml`  
+✔ Set environment variables globally and reboot  
 ✔ Install Docker & run the collector  
-✔ Set environment variables  
 ✔ Run the demo with `LD_PRELOAD`  
-✔ Send client requests  
+✔ Send client requests and verify traces  
 
-After completing these steps, traces from the demo will be sent to the OpenTelemetry Collector and exported according to your configuration.
+---
+
+Traces from the demo are now sent to the OpenTelemetry Collector and exported according to your configuration.
