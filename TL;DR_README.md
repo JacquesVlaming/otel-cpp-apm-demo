@@ -1,4 +1,4 @@
-# OpenTelemetry C++ APM Demo Setup on Red Hat 9
+# OpenTelemetry C++ APM Demo Setup on Red Hat
 
 This guide walks you through setting up a development environment for the **OpenTelemetry C++ APM demo** on **Red Hat 9**.  
 It covers:
@@ -90,7 +90,6 @@ Configure the environment for tracing:
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_INSECURE=true
-export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
 export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
 export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
 ```
@@ -102,6 +101,8 @@ export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
 Start the **ADS server**:
 
 ```bash
+cd $HOME/otel-cpp-apm-demo
+export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
 ./ads_server
 ```
 
@@ -119,6 +120,7 @@ Open another terminal and run the client:
 
 ```bash
 cd $HOME/otel-cpp-apm-demo
+export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
 ./ads_client
 ```
 
