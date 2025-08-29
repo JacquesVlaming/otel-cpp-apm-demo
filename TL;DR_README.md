@@ -91,7 +91,8 @@ Configure the environment for tracing:
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_INSECURE=true
 export OTEL_RESOURCE_ATTRIBUTES=service.name=ads_server,env=dev
-export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
+export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
 ```
 
 ---
@@ -101,7 +102,7 @@ export LD_LIBRARY_PATH=$HOME/otel-cpp/install/lib64:$LD_LIBRARY_PATH
 Start the **ADS server**:
 
 ```bash
-LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so ./ads_server
+./ads_server
 ```
 
 Expected output:

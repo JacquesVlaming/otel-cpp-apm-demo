@@ -1,7 +1,3 @@
-g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so   -I$HOME/otel-cpp/install/include   -L$HOME/otel-cpp/install/lib64   -llibopentelemetry_exporter_otlp_grpc   -llibopentelemetry_trace   -lgrpc++ -lgrpc -ldl -lpthread   -Wl,-rpath,$HOME/otel-cpp/install/lib64:$HOME/otel-cpp/install/lib64
-g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so   -I$HOME/otel-cpp/install/include   -L$HOME/otel-cpp/install/lib64   -llibopentelemetry_exporter_otlp_grpc   -llibopentelemetry_trace   -lgrpc++ -lgrpc -ldl -lpthread   -Wl,-rpath,$HOME/otel-cpp/install/lib64:$HOME/otel-cpp/install/lib64
-
-
 
 g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
   -I$HOME/otel-cpp-apm-demo/otel-cpp/install/include \
@@ -13,16 +9,15 @@ g++ -std=c++17 -shared -fPIC libotel_preload.cpp -o libotel_preload.so \
   -Wl,-rpath,$HOME/otel-cpp-apm-demo/otel-cpp/install/lib:$HOME/otel-cpp/install/lib64
 
 
-
-#include <opentelemetry/trace/tracer_provider.h>
-
+export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib:$LD_LIBRARY_PATH
 
 
-cmake .. \
-  -DBUILD_SHARED_LIBS=ON \
-  -DWITH_OTLP_GRPC=ON \
-  -DOPENTELEMETRY_INSTALL=ON \
-  -DWITH_EXAMPLES=OFF \
-  -DBUILD_TESTING=OFF && \
-cmake --build . --target all && \
-cmake --install .
+cmake .. -DBUILD_SHARED_LIBS=ON -DWITH_OTLP_GRPC=ON -DCMAKE_INSTALL_PREFIX=$HOME/otel-cpp-apm-demo/otel-cpp/install -DWITH_EXAMPLES=OFF -DBUILD_TESTING=OFF
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+
+export LD_LIBRARY_PATH=$HOME/otel-cpp-apm-demo/otel-cpp/install/lib64:$LD_LIBRARY_PATH
+export LD_PRELOAD=$HOME/otel-cpp-apm-demo/libotel_preload.so
+./ads_server
