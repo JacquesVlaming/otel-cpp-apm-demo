@@ -1,4 +1,4 @@
-prefix=/home/jacquesvlaming/otel-cpp/install
+prefix=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib

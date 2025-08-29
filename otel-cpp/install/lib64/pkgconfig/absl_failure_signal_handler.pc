@@ -1,7 +1,7 @@
-prefix=/home/jacquesvlaming/otel-cpp/install
+prefix=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install
 exec_prefix=${prefix}
-libdir=/home/jacquesvlaming/otel-cpp/install/lib64
-includedir=/home/jacquesvlaming/otel-cpp/install/include
+libdir=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install/lib64
+includedir=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install/include
 
 Name: absl_failure_signal_handler
 Description: Abseil failure_signal_handler library

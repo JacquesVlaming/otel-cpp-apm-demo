@@ -1,7 +1,7 @@
-prefix=/home/jacquesvlaming/otel-cpp/install
-exec_prefix=/home/jacquesvlaming/otel-cpp/install
-libdir=/home/jacquesvlaming/otel-cpp/install/lib64
-includedir=/home/jacquesvlaming/otel-cpp/install/include
+prefix=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install
+exec_prefix=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install
+libdir=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install/lib64
+includedir=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install/include
 
 Name: Protocol Buffers
 Description: Google's Data Interchange Format

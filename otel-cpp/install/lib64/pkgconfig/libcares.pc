@@ -4,7 +4,7 @@
 #              | (_|_____| (_| | | |  __/\__ \
 #               \___|     \__,_|_|  \___||___/
 #
-prefix=/home/jacquesvlaming/otel-cpp/install
+prefix=/home/jacquesvlaming/otel-cpp-apm-demo/otel-cpp/install
 exec_prefix=${prefix}/bin
 libdir=${prefix}/lib64
 includedir=${prefix}/include
