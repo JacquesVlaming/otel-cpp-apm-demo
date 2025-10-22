@@ -40,8 +40,8 @@ void init_tracer_lazy() {
 
     try {
         otlp::OtlpHttpExporterOptions opts;
-        opts.url = "https://8cc2be23d7494d91bbf8e59376482661.apm.af-south-1.aws.elastic-cloud.com:443/v1/traces";
-        opts.http_headers = {{"Authorization", "Bearer z2AS3JZXAto1GUgQHZ"}};
+        opts.url = "<Elastic APM Server URL>/v1/traces";
+        opts.http_headers = {{"Authorization", "Bearer <Elastic APM Server API Key>"}};
 
         auto exporter  = otlp::OtlpHttpExporterFactory::Create(opts);
         trace_sdk::BatchSpanProcessorOptions bspOpts{};
