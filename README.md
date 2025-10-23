@@ -30,7 +30,8 @@ Ensure that you have the following installed locally:
 
 ## Steps
 
-Install Prerequisites:
+### Install Prerequisites:
+
 ```bash
 sudo apt update
 sudo apt install git
@@ -42,7 +43,7 @@ sudo apt install zlib1g-dev
 
 ---
 
-Clone the demo repository:
+### Clone the demo repository:
 
 ```bash
 git clone https://github.com/elastic/otel-cpp-demo.git
