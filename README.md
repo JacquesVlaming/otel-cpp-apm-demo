@@ -1,15 +1,18 @@
 # otel-cpp-demo
 
+A C++ demo project showcasing OpenTelemetry instrumentation on Ubuntu.  
+This project demonstrates how to collect and export traces to Elastic APM **without modifying the original application code** by using a **preload tracer library**.
+
+The demo includes a simple `roll-dice` server application, and the `preload_tracer.so` library automatically instruments it at runtime.
+
 Based on https://opentelemetry.io/docs/languages/cpp/getting-started/
 
 After setting up dependencies, your directory structure should resemble this:
 
 $HOME/otel-cpp-demo  
-│  
-├── oatpp  
-├── opentelemetry-cpp  
-└── roll-dice  
-
+├ oatpp/  
+├ opentelemetry-cpp/  
+├ roll-dice/   
 
 ## Prerequisites
 
