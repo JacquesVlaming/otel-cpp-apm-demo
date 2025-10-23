@@ -10,6 +10,7 @@ Based on https://opentelemetry.io/docs/languages/cpp/getting-started/
 Once complete, your directory structure should resemble this:
 
 $HOME/otel-cpp-demo  
+├ images/  
 ├ oatpp/  
 ├ opentelemetry-cpp/  
 ├ roll-dice/   
