@@ -14,6 +14,7 @@
 #include <opentelemetry/sdk/trace/batch_span_processor_factory.h>
 #include <opentelemetry/exporters/otlp/otlp_http_exporter_factory.h>
 #include <opentelemetry/nostd/shared_ptr.h>
+#include <opentelemetry/semconv/service_attributes.h>
 
 namespace trace_api = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
@@ -42,6 +43,7 @@ void init_tracer_lazy() {
 
         const char* endpoint_env = std::getenv("OTEL_EXPORTER_OTLP_ENDPOINT");
         const char* headers_env  = std::getenv("OTEL_EXPORTER_OTLP_HEADERS");
+        const char* service_env  = std::getenv("OTEL_SERVICE_NAME");
 
         otlp::OtlpHttpExporterOptions opts;
         opts.url = std::string(endpoint_env);
@@ -50,6 +52,12 @@ void init_tracer_lazy() {
         auto exporter  = otlp::OtlpHttpExporterFactory::Create(opts);
         trace_sdk::BatchSpanProcessorOptions bspOpts{};
         auto processor = trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), bspOpts);
+
+        // ---- Define Resource with service.name ----
+        auto resource = opentelemetry::sdk::resource::Resource::Create({
+            {opentelemetry::semconv::resource::kServiceName, service_env ? std::string(service_env) : "dice-server"},
+            {"telemetry.sdk.language", "cpp"}
+        });
 
         provider = std::make_shared<trace_sdk::TracerProvider>(std::move(processor));
         opentelemetry::nostd::shared_ptr<trace_api::TracerProvider> provider_nostd(provider);
