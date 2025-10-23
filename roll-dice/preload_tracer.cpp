@@ -39,34 +39,13 @@ void init_tracer_lazy() {
     otel_initialized = true;
 
     try {
+
         const char* endpoint_env = std::getenv("OTEL_EXPORTER_OTLP_ENDPOINT");
         const char* headers_env  = std::getenv("OTEL_EXPORTER_OTLP_HEADERS");
 
-        if (!endpoint_env) {
-            std::cerr << "[OTEL PRELOAD] OTEL_EXPORTER_OTLP_ENDPOINT not set" << std::endl;
-            return;
-        }
-
         otlp::OtlpHttpExporterOptions opts;
         opts.url = std::string(endpoint_env);
-
-        if (headers_env) {
-            // Split headers by comma if multiple, e.g., "key1=value1,key2=value2"
-            std::string headers_str(headers_env);
-            size_t start = 0;
-            while (start < headers_str.size()) {
-                size_t end = headers_str.find(',', start);
-                if (end == std::string::npos) end = headers_str.size();
-                std::string header = headers_str.substr(start, end - start);
-                size_t eq = header.find('=');
-                if (eq != std::string::npos) {
-                    std::string key = header.substr(0, eq);
-                    std::string value = header.substr(eq + 1);
-                    opts.http_headers[key] = value;
-                }
-                start = end + 1;
-            }
-        }
+        opts.http_headers = {{"Authorization", headers_env}};
 
         auto exporter  = otlp::OtlpHttpExporterFactory::Create(opts);
         trace_sdk::BatchSpanProcessorOptions bspOpts{};
