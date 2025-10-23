@@ -127,6 +127,11 @@ export LD_LIBRARY_PATH=$HOME/otel-cpp-demo/otel-cpp/lib:$LD_LIBRARY_PATH
 ```bash
 LD_PRELOAD=$HOME/otel-cpp-demo/roll-dice/preload_tracer.so ./build/dice-server
 ```
+Open a new terminal and run a few curl commands against the dice-server to generate APM traces.
+
+```bash
+curl http://localhost:8080/rolldice
+```
 
 ---
 
