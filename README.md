@@ -2,6 +2,15 @@
 
 Based on https://opentelemetry.io/docs/languages/cpp/getting-started/
 
+After setting up dependencies, your directory structure should resemble this:
+
+$HOME/otel-cpp-demo  
+│  
+├── oatpp  
+├── opentelemetry-cpp  
+└── roll-dice  
+
+
 ## Prerequisites
 
 Ensure that you have the following installed locally:
@@ -17,6 +26,7 @@ Ensure that you have the following installed locally:
 
 ## Steps
 
+Install Prerequisites:
 ```bash
 sudo apt update
 sudo apt install git
@@ -25,6 +35,8 @@ sudo apt install cmake
 sudo apt install libssl-dev
 sudo apt install zlib1g-dev
 ```
+
+---
 
 Clone the demo repository:
 
