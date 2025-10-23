@@ -7,7 +7,7 @@ The demo includes a simple `roll-dice` server application, and the `preload_trac
 
 Based on https://opentelemetry.io/docs/languages/cpp/getting-started/
 
-After setting up dependencies, your directory structure should resemble this:
+Once complete, your directory structure should resemble this:
 
 $HOME/otel-cpp-demo  
 ├ oatpp/  
