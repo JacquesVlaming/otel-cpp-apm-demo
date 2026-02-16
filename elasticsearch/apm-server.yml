@@ -1,0 +1,9 @@
+# APM Server config for local Elasticsearch. Env vars substituted at runtime.
+apm-server:
+  host: "0.0.0.0:8200"
+
+# Use elastic user so APM Server can create traces-* and logs-apm.* indices
+output.elasticsearch:
+  hosts: ["${ELASTICSEARCH_HOSTS}"]
+  username: "${ELASTICSEARCH_USERNAME}"
+  password: "${ELASTICSEARCH_PASSWORD}"
