@@ -1,5 +1,7 @@
 # OpenTelemetry C++ APM Demo Setup on Red Hat 9
 
+This repo includes the **ADS server/client demo** (this README) and the **roll-dice + preloader demo** from [elastic/otel-cpp-demo](https://github.com/elastic/otel-cpp-demo) (Docker, Elasticsearch+APM Server, multi-route dice server). See **README-roll-dice.md** and the `roll-dice/`, `elasticsearch/` folders for that setup.
+
 This guide walks you through setting up a development environment for the OpenTelemetry C++ APM demo on Red Hat 9. It covers system updates, installing tools, Docker setup, building the OpenTelemetry C++ SDK, and running the demo application with tracing.
 
 ---

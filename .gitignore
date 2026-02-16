@@ -1,0 +1,7 @@
+# Oat++ is cloned at build time (Dockerfile); do not commit
+roll-dice/oatpp/
+
+# Local/generated (elasticsearch)
+elasticsearch/.env
+elasticsearch/credentials.txt
+elasticsearch/http_ca.crt
