@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <csignal>
@@ -54,6 +55,9 @@ std::mutex fd_span_mutex;
 // Optional server context (set from env OTEL_SERVER_PORT / OTEL_SERVER_ADDRESS)
 static const char* server_address = nullptr;
 static const char* server_port    = nullptr;
+
+// Forward decl for RHEL 8 safe log (no iostreams in constructor/destructor path)
+static void preload_log(const char* msg);
 
 // ---- Parse "METHOD /path HTTP/1.x" from first line ----
 static void parse_request_line(const std::string& line, std::string& method, std::string& path) {
@@ -171,7 +175,7 @@ void init_tracer_lazy() {
 // ---- Flush spans on exit ----
 void flush_spans() {
     if (!provider) return;
-    std::cout << "[OTEL PRELOAD] Flushing spans..." << std::endl;
+    preload_log("[OTEL PRELOAD] Flushing spans...");
     provider->ForceFlush();
 }
 
@@ -283,16 +287,25 @@ extern "C" int close(int fd) {
     return real_close(fd);
 }
 
+// Safe log from constructor/destructor (no iostreams — avoids segfault on RHEL 8)
+static void preload_log(const char* msg) {
+    size_t n = 0;
+    while (msg[n]) ++n;
+    (void)write(STDERR_FILENO, msg, n);
+    (void)write(STDERR_FILENO, "\n", 1);
+}
+
 // ---- Preload library constructor / destructor ----
-__attribute__((constructor))
+// constructor(101) runs later, reducing init-order issues; no std::cout (RHEL 8 safe)
+__attribute__((constructor(101)))
 void preload_init() {
-    std::cout << "[OTEL PRELOAD] Library loaded ✅" << std::endl;
+    preload_log("[OTEL PRELOAD] Library loaded");
 }
 
 __attribute__((destructor))
 void preload_cleanup() {
     flush_spans();
-    std::cout << "[OTEL PRELOAD] Library unloaded ✅" << std::endl;
+    preload_log("[OTEL PRELOAD] Library unloaded");
 }
 
 // ---- Handle Ctrl+C ----
@@ -301,7 +314,7 @@ void sigint_handler(int signum) {
     std::exit(signum);
 }
 
-__attribute__((constructor))
+__attribute__((constructor(102)))
 void setup_signal_handler() {
     std::signal(SIGINT, sigint_handler);
 }
